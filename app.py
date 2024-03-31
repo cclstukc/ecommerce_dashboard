@@ -5,7 +5,7 @@ import pathlib
 
 working_directory = pathlib.Path(__file__).parent.absolute()
 DATABASE = working_directory / 'CCL_ecommerce.db'
-# OperationalError: sqlite3.OperationalError: no such table: orders
+# http://localhost:5000/api/orders_over_time: OperationalError: sqlite3.OperationalError: no such table: orders
 # Also tried:
 # 1. Downloaded app.py
 # 2. DATABASE = ('/Users/kurtcormack/Documents/ecommerce-dashboard/CCL_ecommerce.db')
@@ -32,7 +32,7 @@ app.config['EXPLAIN_TEMPLATE_LOADING'] = True
 @app.route('/')                                 # Defines route of app
 def index() -> str:                             # Function that is executes when route is accessed
     return render_template('dashboard.html')    # Displays 'dashboard.html' template
-# TemplateNotFound jinja2.exceptions.TemplateNotFound: dashboard.html
+# http://127.0.0.1:5000: TemplateNotFound jinja2.exceptions.TemplateNotFound: dashboard.html
 # Also tried:
 # 1. downloaded app.py
 # 2. return render_template('/Users/kurtcormack/Documents/ecommerce-dashboard/templates/dashboard.html')

@@ -1,0 +1,165 @@
+<!--XXX-->
+<!--Defines doc as html-->
+<!DOCTYPE html>
+
+<!--Signifies beginning-->
+<html lang="en">
+
+<!--First primary section-->
+<!--Does not display visable content-->
+<!--Information about the page, e.g. title, links, keywords for SEO-->
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Dashboard</title>  <!--Broswer tab-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <link rel="stylesheet" href="../static/dashboard_stylesheet.css">
+</head>
+
+ <!--All visible content of a webpage-->
+<body>
+
+    <header>
+        <div class="dashboard-title">E-Commerce Data Dashboard</div>
+    </header>
+
+    <div class='container'>
+
+        <section>
+            <div class="chart-row">
+                <div class="chart-container full-width">
+                    <h2>Orders Over Time</h2>
+                    <canvas id="ordersChart"></canvas>  <!--Each canvas is a placeholder for data driven visuals-->
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="chart-row">
+                <div class="chart-container half-width">
+                    <h2>Low Stock Levels</h2>
+                    <canvas id="stockChart"></canvas>  <!--Each canvas is a placeholder for data driven visuals-->
+                </div>
+                <div class="chart-container half-width">
+                    <h2>Most Popular Products</h2>
+                    <canvas id="popularProductsChart"></canvas>  <!--Each canvas is a placeholder for data driven visuals-->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="footer">© 2023 CCL Eccomerce Dashboard</div>
+    </footer>
+
+    <script>
+        // Orders over time line chart 
+        fetch('/api/orders_over_time')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('ordersChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.dates,
+                        datasets: [{
+                            label: 'Number of orders',
+                            data: data.counts,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75,192, 192, 0.2)',
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                             beginAtZero: true
+                            },
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'day'
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+
+        // Initiate a fetch request to the '/api/low_stock_levels' endpoint
+        fetch('/api/low_stock_levels')
+            // Parse the fetched response as JSON
+            .then(response => response.json())
+            // Use the parsed data to render the chart
+            .then(data => {
+            // Get the 2D rendering context of the HTML5 Canvas element with the id 'stockChart' above
+                const ctx = document.getElementById('stockChart').getContext('2d');
+                // Create a new Chart.js instance to render a bar chart
+                new Chart(ctx, {
+                    type: 'bar',  // Specify the type of chart as 'bar'
+                    data: {
+                        labels: data.products,  // Set the x-axis labels to the product names
+                        datasets: [{
+                            label: 'Stock Quantity',  // Set the label for the dataset
+                            data: data.quantities,  // Set the data for the bars as the stock quantities
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',  // Set the background color of the bars
+                            borderColor: 'rgba(255, 99, 132, 1)',  // Set the border color of the bars
+                            borderWidth: 1  // Set the border width of the bars to 1 pixel
+                        }]
+                    },
+                    options: {
+                        responsive: true,  // Ensure the chart is responsive to window resizing
+                        scales: {
+                            y: {
+                                beginAtZero: true  // Start the y-axis scale at zero
+                            },
+                            x: {
+                                display: true  // false will hide the x-axis labels
+                            }
+                        }
+                    }
+                });
+            });
+
+        // Most popular products bar chart
+        fetch('/api/most_popular_products')
+            .then(response => response.json())
+            .then(data => {
+                const productNames = data.map(item => item.product_name);
+                const quantities = data.map(item => item.total_quantity);
+                const ctx = document.getElementById('popularProductsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: productNames,
+                        datasets: [{
+                            label: 'Quantity Sold',
+                            data: quantities,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            },
+                            x: {
+                                display: false  // This will hide the x-axis labels
+                            }
+                        }
+                    }
+                });
+            });
+// Signifies end of script
+    </script>
+
+<!--// Signifies end of body-->
+</body>
+
+<!--// Signifies end of webpage-->
+</html>
