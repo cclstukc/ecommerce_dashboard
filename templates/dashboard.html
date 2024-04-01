@@ -48,6 +48,31 @@
                 </div>
             </div>
         </section>
+
+        <!--Copy 2nd section for two pie charts-->
+        <section>
+            <div class="chart-row">
+                <div class="chart-container half-width">        
+                    <h2>Popular Categories</h2>                     <!--Change chart title-->
+                    <canvas id="popcatChart"></canvas>              <!--Change canvas id-->
+                </div>
+                <div class="chart-container half-width">        
+                    <h2>Popular Payment Methods</h2>                <!--Change chart title-->
+                    <canvas id="paymetChart"></canvas>              <!--Change canvas id-->
+                </div>
+            </div>
+        </section>
+
+        <!--Copy 1st section for revenue_generation line chart-->
+        <section>
+            <div class="chart-row">
+                <div class="chart-container full-width">        
+                    <h2>Revenue Over Time</h2>                      <!--Change chart title-->
+                    <canvas id="revgenChart"></canvas>              <!--Change canvas id-->
+                </div>
+            </div>
+        </section>
+
     </div>
 
     <footer>
@@ -155,6 +180,78 @@
                     }
                 });
             });
+
+        // Popular categories pie chart
+        fetch('/api/product_category_popularity')                                       //Change api
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('popcatChart').getContext('2d');    //Change canvas id
+                new Chart(ctx, {
+                    type: 'pie',                                                        //Change chart type
+                    data: {
+                        labels: data.categories,                                        //Change data
+                        datasets: [{
+                            data: data.sales,                                           //Change data
+                            backgroundColor: ["tomato","orange","dodgerblue","mediumseagreen","grey","slateblue","violet","lightgrey"],
+                        }]
+                    },
+                });
+            });
+
+        // Popular payment methods pie chart
+        fetch('/api/payment_method_popularity')                                         //Change api
+            .then(response => response.json())
+            .then(data => {
+//                const productNames = data.map(item => item.methods);                    //Change data
+//                const quantities = data.map(item => item.counts);                       //Change data
+                const ctx = document.getElementById('paymetChart').getContext('2d');    //Change canvas id
+                new Chart(ctx, {
+                    type: 'pie',                                                        //Change chart type
+                    data: {
+                        labels: data.methods,                                           //Change data
+                        datasets: [{
+ //                           label: 'Methods',                                           //Change label
+                            data: data.counts,                                           //Change data
+                            backgroundColor: ["tomato","orange","dodgerblue","mediumseagreen","grey","slateblue","violet","lightgrey"],
+                        }]
+                    },
+                });
+            });
+
+        // Revenue generation line chart 
+        fetch('/api/revenue_generation')                                                //Change api/
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('revgenChart').getContext('2d');    //Change canvas id
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.dates,                                             //Change data
+                        datasets: [{
+                            label: 'Total Revenue',                                     //Change label
+                            data: data.revenues,                                        //Change data
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75,192, 192, 0.2)',
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                             beginAtZero: true
+                            },
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'day'
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+
 // Signifies end of script
     </script>
 

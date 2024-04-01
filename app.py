@@ -1,6 +1,10 @@
-from flask import Flask, jsonify, render_template, Response
+from flask import Flask, jsonify, render_template, Response, abort, make_response
 import sqlite3
 import pathlib
+import logging
+
+# Set-up logging
+logging.basicConfig(filename="app.log", level=logging.DEBUG)
 
 working_directory = pathlib.Path(__file__).parent.absolute()
 DATABASE = working_directory / 'CCL_ecommerce.db'
@@ -9,15 +13,20 @@ DATABASE = working_directory / 'CCL_ecommerce.db'
 # 1. Downloaded app.py
 # 2. DATABASE = ('/Users/kurtcormack/Documents/ecommerce-dashboard/CCL_ecommerce.db')
 # 3. working_directory = pathlib.Path(__file__).parent.resolve()
-
+# 4. Issue appeared to be resolved (accidentally) when using conda env
 
 # This is how the app connects to sqlite db and retrieves data:
 def query_db(query: str, args=()) -> list:
-    with sqlite3.connect(DATABASE) as conn:                 # Connects to sqlite db at the path specified by the DATABASE variable 
-        cursor = conn.cursor()                              # Creates a cursor object, a tool which interacts with the db 
-        result =  cursor.execute(query, args).fetchall()    # Executes the sql query and fetches the all the results
-    return result
-
+    try:
+        with sqlite3.connect(DATABASE) as conn:                 # Connects to sqlite db at the path specified by the DATABASE variable 
+            cursor = conn.cursor()                              # Creates a cursor object, a tool which interacts with the db 
+            result =  cursor.execute(query, args).fetchall()    # Executes the sql query and fetches the all the results
+        return result
+    except sqlite3.Error as e:
+        logging.error("Database error: %s", e)
+        abort(500, description="Database error occurred.")
+# If error/exception occurs inside the try block the code in the except block is executed 
+# Logging records events and messages, e.g. system processes, warnings and errors including exceptions that occur 
 
 # This sets up our Flask application
 # A simple way to create web servers, handle requests and return responses
@@ -27,6 +36,17 @@ def query_db(query: str, args=()) -> list:
 
 app = Flask(__name__)
 app.config['EXPLAIN_TEMPLATE_LOADING'] = True
+
+# Handles http 404 errors
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({"error": "Not found"}), 404)
+
+# Handles http 500 errors
+@app.errorhandler(500)
+def internal_error(error):
+    return make_response(jsonify({"error": "Internal server error"}), 500)
+
 
 # How Flask will recognise routes/urls a user visits and how to respond 
 @app.route('/')                                 # Defines route of app
@@ -51,10 +71,14 @@ def orders_over_time() -> Response:
     GROUP BY order_date
     ORDER BY order_date;
     """
-    result = query_db(query)
-    dates = [row[0] for row in result]
-    counts = [row[1] for row in result]
-    return jsonify({"dates": dates, "counts": counts})
+    try:
+        result = query_db(query)
+        dates = [row[0] for row in result]
+        counts = [row[1] for row in result]
+        return jsonify({"dates": dates, "counts": counts})
+    except Exception as e:
+        logging.error("Error in /api/orders_over_time: %s", e)
+        abort(500, description="Error processing data.")
 
 # low_stock_levels SQL -> json
 @app.route("/api/low_stock_levels")
@@ -87,6 +111,53 @@ def most_popular_products_new() -> Response:
         for row in result
     ]
     return jsonify(products)
+
+# revenue_generation SQL -> json
+@app.route("/api/revenue_generation")
+def revenue_generation() -> Response:
+    query = """
+    SELECT o.order_date, SUM(od.price_at_time * od.quantity_ordered) AS total_revenue
+    FROM order_details od
+    JOIN orders o ON od.order_id = o.order_id
+    GROUP BY o.order_date
+    ORDER BY o.order_date;
+    """
+    result = query_db(query)
+    dates = [row[0] for row in result]
+    revenues = [row[1] for row in result]
+    return jsonify({"dates": dates, "revenues": revenues})
+
+# product_category_popularity SQL -> json
+@app.route("/api/product_category_popularity")
+def product_category_popularity() -> Response:
+    query = """
+    SELECT pc.category_name, SUM(od.price_at_time * od.quantity_ordered) AS total_sales
+    FROM products p
+    JOIN product_categories pc ON p.category_id = pc.category_id
+    JOIN order_details od ON p.product_id = od.product_id
+    GROUP BY pc.category_name
+    ORDER BY total_sales DESC;
+    """
+    result = query_db(query)
+    categories = [row[0] for row in result]
+    sales = [row[1] for row in result]
+    return jsonify({"categories": categories, "sales": sales})
+
+# payment_method_popularity SQL -> json
+@app.route("/api/payment_method_popularity")
+def payment_method_popularity() -> Response:
+    query = """
+    SELECT pm.method_name, COUNT(p.payment_id) AS transaction_count
+    FROM payments p
+    JOIN payment_methods pm ON p.method_id = pm.method_id
+    GROUP BY pm.method_name
+    ORDER BY transaction_count DESC;
+    """
+    result = query_db(query)
+    methods = [row[0] for row in result]
+    counts = [row[1] for row in result]
+    return jsonify({"methods": methods, "counts": counts})
+
 
 # Running the application
 # Launch app, make it live and respond to API requestss
