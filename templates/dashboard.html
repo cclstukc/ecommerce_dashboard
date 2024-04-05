@@ -1,4 +1,5 @@
-<!--XXX-->
+<!--Provides structure for the webpage-->
+
 <!--Defines doc as html-->
 <!DOCTYPE html>
 
@@ -6,7 +7,7 @@
 <html lang="en">
 
 <!--First primary section-->
-<!--Does not display visable content-->
+<!--Does not display as visable content-->
 <!--Information about the page, e.g. title, links, keywords for SEO-->
 <head>
     <meta charset="UTF-8"> 
@@ -27,6 +28,7 @@
 
     <div class='container'>
 
+        <!--Orders over time placeholder-->
         <section>
             <div class="chart-row">
                 <div class="chart-container full-width">
@@ -35,7 +37,18 @@
                 </div>
             </div>
         </section>
+        
+        <!--Temperature placeholder-->
+        <section>
+            <div class="chart-row">
+                <div class="chart-container full-width">
+                    <h2>Temperature</h2>
+                    <canvas id="temperatureChart"></canvas>
+                </div>
+            </div>
+        </section>
 
+        <!--Stock chart and popular products placeholder-->
         <section>
             <div class="chart-row">
                 <div class="chart-container half-width">
@@ -54,11 +67,11 @@
             <div class="chart-row">
                 <div class="chart-container half-width">        
                     <h2>Popular Categories</h2>                     <!--Change chart title-->
-                    <canvas id="popcatChart"></canvas>              <!--Change canvas id-->
+                    <canvas id="categoryPopularityChart"></canvas>              <!--Change canvas id-->
                 </div>
                 <div class="chart-container half-width">        
                     <h2>Popular Payment Methods</h2>                <!--Change chart title-->
-                    <canvas id="paymetChart"></canvas>              <!--Change canvas id-->
+                    <canvas id="paymentMethodChart"></canvas>              <!--Change canvas id-->
                 </div>
             </div>
         </section>
@@ -68,7 +81,7 @@
             <div class="chart-row">
                 <div class="chart-container full-width">        
                     <h2>Revenue Over Time</h2>                      <!--Change chart title-->
-                    <canvas id="revgenChart"></canvas>              <!--Change canvas id-->
+                    <canvas id="revenueChart"></canvas>              <!--Change canvas id-->
                 </div>
             </div>
         </section>
@@ -78,6 +91,11 @@
     <footer>
         <div class="footer">© 2023 CCL Eccomerce Dashboard</div>
     </footer>
+
+<!-- LOAD OUR JAVASCRIPT FILE. Place this at the bottom of the page so that the DOM is loaded before the script is run. -->
+<script src="../static/dashboard-script.js"></script>
+
+<!--Move to dashboard-script.js 
 
     <script>
         // Orders over time line chart 
@@ -254,6 +272,8 @@
 
 // Signifies end of script
     </script>
+
+Move to dashboard-script.js-->
 
 <!--// Signifies end of body-->
 </body>
